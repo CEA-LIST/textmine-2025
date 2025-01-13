@@ -32,7 +32,7 @@ def main():
     parser.add_argument("--results_path", required=True, type=str, help="Path for saving results")
     parser.add_argument("--use_specific_entity_types_markers", action="store_true", help="Flag to use specific entity types markers")
     parser.add_argument("--use_specific_parent_entity_types_markers", action="store_true", help="Flag to use specific entity types markers and parent entity types")
-    parser.add_argument("--evidence_construction", choices=['predictions_and_rule_based', 'rule_based'], default='predictions_and_rule_based', type=str, help="How to construct the evidences") 
+    parser.add_argument("--evidence_construction", choices=['predictions', 'predictions_and_rule_based', 'rule_based'], default='predictions_and_rule_based', type=str, help="How to construct the evidences") 
     parser.add_argument("--train_on_full_train_set", action='store_true', help="Flag to train on the full train set without validation and test")
     parser.add_argument("--multi_label", action="store_true", help="Flag to use the multi label configuration during predictions. Else take the best prediction")
     parser.add_argument("--skip_training", action="store_true")

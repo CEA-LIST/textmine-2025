@@ -68,7 +68,7 @@ def get_rule_based_sent_labels(example, hts, sent_label):
 def get_sentence_labels(example, evidence_construction):
     sent_labels = []
 
-    if evidence_construction == 'predictions_and_rule_based':
+    if evidence_construction in ['predictions', 'predictions_and_rule_based']:
         for i, silver_evidence in enumerate(example['silver_evidence']):
             hts = example['hts'][i]
             sent_label = [0] * len(example['sent_pos'])
@@ -77,8 +77,8 @@ def get_sentence_labels(example, evidence_construction):
             if silver_evidence != []:
                 for j in silver_evidence:
                     sent_label[j] = 1
-            
-            else:
+            # compléter par règles heuristiques si silver evidences vides
+            elif evidence_construction == 'predictions_and_rule_based': 
                 sent_label = get_rule_based_sent_labels(example, hts, sent_label)
 
             sent_labels.append(sent_label)
@@ -92,3 +92,4 @@ def get_sentence_labels(example, evidence_construction):
 
     example['sent_labels'] = sent_labels
     return example
+
