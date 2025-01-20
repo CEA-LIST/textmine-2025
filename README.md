@@ -28,7 +28,7 @@ pip install dgl==1.0.0
 ```
 
 #### Installing Apex
-Install **Apex** by following the instructions available at the [NVIDIA Apex GitHub repository](https://github.com/NVIDIA/apex). Our experiments have been run under `apex==0.1`
+Install **Apex** by following the instructions available at the [NVIDIA Apex GitHub repository](https://github.com/NVIDIA/apex). Ours experiments have been run under `apex==0.1`
 
 
 ## Running the Models
