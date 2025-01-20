@@ -1,18 +1,24 @@
 import torch
+from torch.nn import Parameter
 import torch.nn as nn
 from opt_einsum import contract
 from long_seq import process_long_input
 from losses import MATLoss
 import numpy as np
 import torch.nn.functional as F
+import math
 import pickle
-from gat import GAT
 import dgl
+
+from gat import GAT
+from gcn import GCN 
 
 class LACEModel(nn.Module):
 
     def __init__(self, config, model, adjacency_matrix_save_path, label_embeddings_save_path, device, 
-                 block_size=64, num_labels=-1, threshold=0.85, use_entity_embedding_layers_mean=False, use_entity_attention_layers_mean=False):
+                 block_size=64, num_labels=-1, threshold=0.85, 
+                 use_entity_embedding_layers_mean=False, use_entity_attention_layers_mean=False,
+                 type_of_graph='GAT'):
         super().__init__()
         self.threshold = threshold
         self.config = config
@@ -35,17 +41,30 @@ class LACEModel(nn.Module):
         docred_adj = pickle.load(open(adjacency_matrix_save_path, 'rb'))
         A = self.gen_dgl_graph(docred_adj)
         A = A.int().to(device)
-        self.gat = GAT(g=A,
-                       num_layers=2,
-                       in_dim=emb_size,
-                       num_hidden=500,
-                       num_classes=emb_size,
-                       heads=([2] * 2) + [1],
-                       activation=F.elu,
-                       feat_drop=0,
-                       attn_drop=0,
-                       negative_slope=0.2,
-                       residual=False).to(device)
+
+        self.type_of_graph = type_of_graph
+        print(self.type_of_graph)
+        if self.type_of_graph == 'GAT':
+            self.gat = GAT(g=A,
+                        num_layers=2,
+                        in_dim=emb_size,
+                        num_hidden=500,
+                        num_classes=emb_size,
+                        heads=([2] * 2) + [1],
+                        activation=F.elu,
+                        feat_drop=0,
+                        attn_drop=0,
+                        negative_slope=0.2,
+                        residual=False).to(device)
+        elif self.type_of_graph == 'GCN':  
+            self.gcn = GCN(g=A,
+                        num_layers=2,
+                        in_dim=emb_size,  
+                        num_hidden=500, 
+                        num_classes=emb_size,  
+                        activation=None, 
+                        residual=False).to(device)
+                            
         self.layer_norm = nn.LayerNorm(torch.Size([num_labels])).to(device)
         self.linear2 = nn.Linear(num_labels * 2, num_labels).to(device)
 
@@ -160,7 +179,10 @@ class LACEModel(nn.Module):
 
         label_embedding = self.docred_label_embedding.float()  
 
-        label_embedding = self.gat(label_embedding) 
+        if self.type_of_graph == 'GAT':
+            label_embedding = self.gat(label_embedding)
+        elif self.type_of_graph == 'GCN':
+            label_embedding = self.gcn(label_embedding) 
 
         hs_with_labelinfo = torch.matmul(hs, label_embedding.transpose(0, 1))
         ts_with_labelinfo = torch.matmul(ts, label_embedding.transpose(0, 1))

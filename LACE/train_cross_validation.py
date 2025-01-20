@@ -65,6 +65,7 @@ def main():
     parser.add_argument("--use_entity_attention_layers_mean", action="store_true", help="Flag to use the mean of entity attention from all layers. Else take the attention of last layer")
     parser.add_argument("--num_folds", default=5, type=int, help="Nuber of folds for the cross validation")
     parser.add_argument("--multi_label", action="store_true", help="Flag to use the multi label configuration during predictions. Else take the best prediction")
+    parser.add_argument("--type_of_graph", default="GAT", type=str, choices=['GAT', 'GCN'], help="Type of graph to use in the model")
 
     parser.add_argument("--config_name", default="", type=str,
                         help="Pretrained config name or path if not the same as model_name")
@@ -171,7 +172,8 @@ def main():
 
         set_seed(args)
         model = LACEModel(config, transformer_model, args.adjacency_matrix_save_path, args.label_embeddings_save_path, device, num_labels=args.num_class, 
-                        use_entity_embedding_layers_mean=args.use_entity_embedding_layers_mean, use_entity_attention_layers_mean=args.use_entity_attention_layers_mean)
+                        use_entity_embedding_layers_mean=args.use_entity_embedding_layers_mean, use_entity_attention_layers_mean=args.use_entity_attention_layers_mean,
+                        type_of_graph=args.type_of_graph)
         model.to(device)
 
         args.save_finetuned_model_path = args.save_finetuned_model_path.replace('.pt', f'_fold_{fold + 1}.pt')
